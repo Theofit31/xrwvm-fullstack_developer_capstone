@@ -10,7 +10,7 @@ backend_url = os.getenv(
 sentiment_analyzer_url = os.getenv(
     'sentiment_analyzer_url',
     default="http://localhost:5050/")
-
+print("backend_url from env:", backend_url)
 # def get_request(endpoint, **kwargs):
 # Add code for get requests to back end
 def get_request(endpoint, **kwargs):
@@ -34,7 +34,7 @@ def analyze_review_sentiments(text):
     request_url = sentiment_analyzer_url+"analyze/"+text
     try:
         # Call get method of request library with URL and parameters
-        response = request.get(request_url)
+        response = requests.get(request_url)
         return response.json()
     except Exception as err:
         print(f"Unexpected {err=}, {type(err)=}")
@@ -42,7 +42,7 @@ def analyze_review_sentiments(text):
 def post_review(data_dict):
     request_url = backend_url + "/insert_review"
     try:
-        response = request.post(request_url, json=data_dict)   
+        response = requests.post(request_url, json=data_dict)   
         print(response.json())
         return response.json()
     except:

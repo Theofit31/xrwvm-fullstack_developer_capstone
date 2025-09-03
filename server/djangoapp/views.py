@@ -101,17 +101,31 @@ def get_dealerships(request, state="All"):
     dealerships = get_request(endpoint)
     return JsonResponse({"status": 200, "dealers": dealerships})
 # Create a `get_dealer_reviews` view to render the reviews of a dealer
-def get_dealer_reviews(request,dealer_id):
-    if(dealer_id):
-        endpoint = "/fetchReviews/dealer/" + str(dealer_id)
-        reviews = get_request(endpoint)
-        for review_detail in reviews:
-            response = analyze_review_sentiments(review_detail['review'])
-            print(response)
-            review_detail['sentiment'] = response['sentiment']
-        return JsonResponse({"status": 200, "reviews":reviews})
-    else:
-        return JsonResponse({"status": 400, 'message': 'Bad Request'})
+def get_dealer_reviews(request, dealer_id):
+    endpoint = f"/fetchReviews/dealer/{dealer_id}"
+    reviews = get_request(endpoint)
+    results = []
+
+    for r in reviews:
+        review_obj = {
+            "id": r.get("id"),
+            "name": r.get("name"),
+            "review": r.get("review"),
+            "car_make": r.get("car_make"),
+            "car_model": r.get("car_model"),
+            "car_year": r.get("car_year"),
+        }
+        try:
+            sentiment_resp = analyze_review_sentiments(r.get("review", ""))
+            review_obj["sentiment"] = sentiment_resp.get("sentiment", "neutral") if sentiment_resp else "neutral"
+        except Exception as e:
+            print(f"Sentiment analysis failed: {e}")
+            review_obj["sentiment"] = "neutral"
+
+        results.append(review_obj)
+
+    return JsonResponse({"status": 200, "reviews": results})
+
 
 # Create a `get_dealer_details` view to render the dealer details
 def get_dealer_details(request, dealer_id):
